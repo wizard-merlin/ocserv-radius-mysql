@@ -31,6 +31,7 @@ Add a user to a group called `basic`
 ```
 INSERT INTO `radusergroup` (`username`, `groupname`, `priority`)
 VALUES ('testuser', 'basic', '1');
+```
 
 Now try to connect the VPN server as user `testuser` with password `foobar`.
 
