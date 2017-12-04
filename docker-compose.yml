@@ -1,0 +1,64 @@
+version: '3'
+services:
+    freeradius:
+        build: ./freeradius
+        expose:
+            - 1812
+            - 1813
+            - 1814
+        networks:
+            app_net:
+                ipv4_address: 172.16.238.10
+        deploy:
+            restart_policy:
+                condition: any
+                delay: 8s
+                max_attempts: 3
+        depends_on:
+           - mysql
+        command: ["/root/wait-for-mysql.sh", "mysql", "--", "freeradius", "-X"]
+    ocserv:
+        build: ./ocserv
+        ports:
+            - "8388:443"
+            - "8388:443/udp"
+        networks:
+            app_net:
+                ipv4_address: 172.16.238.20
+        privileged: true
+    radtest:
+        build: ./radtest
+        networks:
+            app_net:
+                ipv4_address: 172.16.238.30
+    mysql:
+        image: mysql
+#        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: mystrongpassword
+        volumes:
+            - ./mysql/initdb:/docker-entrypoint-initdb.d
+            - data-volume:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
+        networks:
+            - app_net
+    adminer:
+        image: adminer
+#        restart: always
+        ports:
+            - 8080:8080
+        networks:
+            - app_net
+networks:
+    app_net:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+            - 
+                subnet: 172.16.238.0/24
+volumes:
+    data-volume:
