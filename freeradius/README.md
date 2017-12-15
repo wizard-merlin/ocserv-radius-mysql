@@ -216,4 +216,17 @@ modification to sqlcounter
  }
 ```
 
+```
+--- accounting.original	2017-12-05 00:39:54.641388918 -0700
++++ accounting	2017-12-05 00:47:04.686385116 -0700
+@@ -51,7 +51,7 @@
+ 	#
+ 	else {
+ 		update request {
+-			&Acct-Unique-Session-Id := "%{md5:%{User-Name},%{Acct-Session-ID},%{%{NAS-IPv6-Address}:-%{NAS-IP-Address}},%{NAS-Identifier},%{NAS-Port-ID},%{NAS-Port}}"
++			&Acct-Unique-Session-Id := "%{md5:%{User-Name},%{Acct-Session-ID},%{%{NAS-IPv6-Address}:-%{NAS-IP-Address}},%{NAS-Identifier}}"
+ 		 }
+ 	}
+ }
+```
 
