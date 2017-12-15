@@ -11,6 +11,7 @@ COPY sqlcounter /etc/freeradius/mods-available/sqlcounter
 COPY default /etc/freeradius/sites-available/default
 COPY dictionary /etc/freeradius/dictionary
 COPY accounting /etc/freeradius/policy.d/accounting
+COPY queries.conf /etc/freeradius/mods-config/sql/main/mysql/queries.conf
 COPY wait-for-mysql.sh /root/wait-for-mysql.sh
 RUN ln -s /etc/freeradius/mods-available/sql /etc/freeradius/mods-enabled/sql \
     && ln -s /etc/freeradius/mods-available/sqlcounter /etc/freeradius/mods-enabled/sqlcounter

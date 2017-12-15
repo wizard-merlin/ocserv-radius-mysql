@@ -230,3 +230,20 @@ modification to sqlcounter
  }
 ```
 
+```
+--- queries.conf.original	2017-07-28 00:41:57.000000000 -0600
++++ queries.conf	2017-12-14 23:51:49.891546102 -0700
+@@ -392,10 +392,9 @@
+ 
+ 	query =	"\
+ 		INSERT INTO ${..postauth_table} \
+-			(username, pass, reply, authdate) \
++			(username, reply, authdate) \
+ 		VALUES ( \
+ 			'%{SQL-User-Name}', \
+-			'%{%{User-Password}:-%{Chap-Password}}', \
+ 			'%{reply:Packet-Type}', \
+ 			'%S')"
+ }
+```
+
