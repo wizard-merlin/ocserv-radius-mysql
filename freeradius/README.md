@@ -325,3 +325,27 @@ modification to sqlcounter
  	#
  	#  The following hashes are given to the module and
 ```
+-------
+Some explanation on custom perl script for authentication. 
+
+freeradius first reads the `authorize` section in `/etc/freeradius/sites-available/default`, when freeradius find the statement `perl`, it checks `/etc/freeradius/mods-available/perl`, which points it to `/etc/freeradius/mods-config/perl/auth.pl`. freeradius will call the `authorize` function in `auth.pl`, which does nothing but returning `OK`.
+
+Then back in the file `default`, freeradius finds the `ulang` block 
+```
+	if (ok || updated) {
+	    update control {
+		Auth-Type := Perl
+	    }
+	}
+```
+which sets the `Auth-Type` attribute to "Perl". By setting the `Auth-Type` attribute, perl module claims the responsibility of authenticating users. The following `sql` module will find a matching row in the `radcheck` table and add an AVP(Attribute-Value Pair) like `Cleartext-Password: hashed_password`, which is the "known good password" to be used for authentication. The `pap` usually comes last in the `authorize` section, it sets the `Auth-Type` attribute only if no other modules have set it before. 
+
+The `authenticate` section lists the modules for authentication. Becasue `Auth-Type` has been set to "Perl", the following block will match
+```
+	Auth-Type Perl {
+	    perl
+	}
+```
+And the `authenticate` function in `auth.pl` will be called. The `authenticate` function will get the encrypted password from `$RAD_CHECK{'Cleartext-Password'}` and get plaintext password from `$RAD_REQUEST{'User-Password'}` and verify whether them match. 
+
+It would be more intuitive if we can use Attribute-Value Pair like `PBKDF2-Password: hashed_password`. Unfortunately, the sql module only recognize attributes like `Crypt-Password`, `MD5-Password`, etc., so we must reuse one of the existing attributes for the `attribute` field of `radcheck` table. "Cleartext-Password" is chosen because otherwise freeradius will preprocess the value. This custom authentication perl script only supports PBKDF2.
