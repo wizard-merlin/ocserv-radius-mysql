@@ -247,3 +247,81 @@ modification to sqlcounter
  }
 ```
 
+```
+--- example.pl.original	2017-07-28 00:41:59.000000000 -0600
++++ auth.pl	2017-12-17 20:16:49.860214100 -0700
+@@ -32,6 +32,7 @@
+ 
+ # use ...
+ use Data::Dumper;
++use Crypt::PBKDF2;
+ 
+ # Bring the global hashes into the package scope
+ our (%RAD_REQUEST, %RAD_REPLY, %RAD_CHECK, %RAD_STATE);
+@@ -118,22 +119,29 @@
+ # Function to handle authenticate
+ sub authenticate {
+ 	# For debugging purposes only
+-#	&log_request_attributes;
++	#&log_request_attributes;
+ 
+-	if ($RAD_REQUEST{'User-Name'} =~ /^baduser/i) {
+-		# Reject user and tell him why
+-		$RAD_REPLY{'Reply-Message'} = "Denied access by rlm_perl function";
++	my $pbkdf2 = Crypt::PBKDF2->new(
++		hash_class => 'HMACSHA2',
++		hash_args => {
++			sha_size => 512,
++		},
++	    iterations => 10000,
++	    salt_len => 10,
++	);
++	if (!exists $RAD_CHECK{'Cleartext-Password'}) {
++		$RAD_REPLY{'Reply-Message'} = "rlm_perl: unsupported password hashing function";
+ 		return RLM_MODULE_REJECT;
+-	} else {
+-		# Accept user and set some attribute
+-		if (&radiusd::xlat("%{client:group}") eq 'UltraAllInclusive') {
+-			# User called from NAS with unlim plan set, set higher limits
+-			$RAD_REPLY{'h323-credit-amount'} = "1000000";
+-		} else {
+-			$RAD_REPLY{'h323-credit-amount'} = "100";
+-		}
++	}
++	my $hash = $RAD_CHECK{'Cleartext-Password'};
++	if ($pbkdf2->validate($hash, $RAD_REQUEST{'User-Password'})) {
+ 		return RLM_MODULE_OK;
++	} else {
++		$RAD_REPLY{'Reply-Message'} = "rlm_perl: access Denied, wrong username or password";
++		return RLM_MODULE_REJECT;
+ 	}
++
++
+ }
+ 
+ # Function to handle preacct
+@@ -226,5 +234,7 @@
+ 	for (keys %RAD_REQUEST) {
+ 		&radiusd::radlog(L_DBG, "RAD_REQUEST: $_ = $RAD_REQUEST{$_}");
+ 	}
++	for (keys %RAD_CHECK) {
++		&radiusd::radlog(L_DBG, "RAD_CHECK: $_ = $RAD_CHECK{$_}");
++	}
+ }
+-
+```
+
+
+```
+--- perl.original	2017-07-28 00:41:57.000000000 -0600
++++ perl	2017-12-17 15:03:16.509710549 -0700
+@@ -11,7 +11,7 @@
+ 	#  'rlm_exec' module, but it is persistent, and therefore
+ 	#  faster.
+ 	#
+-	filename = ${modconfdir}/${.:instance}/example.pl
++	filename = ${modconfdir}/${.:instance}/auth.pl
+ 
+ 	#
+ 	#  The following hashes are given to the module and
+```

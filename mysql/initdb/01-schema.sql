@@ -63,7 +63,7 @@ CREATE TABLE radcheck (
   username varchar(64) NOT NULL default '',
   attribute varchar(64)  NOT NULL default '',
   op char(2) NOT NULL DEFAULT ':=',
-  value varchar(253) NOT NULL default '',
+  value varchar(512) NOT NULL default '',
   PRIMARY KEY  (id),
   KEY username (username(32))
 );
