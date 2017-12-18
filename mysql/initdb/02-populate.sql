@@ -4,9 +4,9 @@ USE radius;
 INSERT INTO `nas` (`nasname`, `shortname`, `type`, `ports`, `secret`, `server`, `community`, `description`)
 VALUES ('172.16.238.20', 'ocserv', 'other', NULL, 'testing123', NULL, NULL, 'RADIUS Client');
 
-# Add a user. To get the hash value of a password, run `radcrypt <password>`. In the following example, the password is `foobar`.
+# Add a user. To get the hash value of a password, run `pbkdf2.pl <password>`. In the following example, the password is `foobar`.
 INSERT INTO `radcheck` (`username`, `attribute`, `op`, `value`)
-VALUES ('testuser', 'Crypt-Password', ':=', 'dTX25UxtVmFPM');
+VALUES ('testuser', 'Cleartext-Password', ':=', '{X-PBKDF2}HMACSHA2+512:AAAnEA:pJ1dOkNCKR3pWw==:NpQziayA1kVAIhWHSueYuTT66/VwANjvFDMqKhyNqNIwS2AQvcHDhHLBEteMYTRjHGbH/ukyOOaw4q+LKUZTpg==');
 
 # Add a user to a group called `basic`
 INSERT INTO `radusergroup` (`username`, `groupname`, `priority`)
