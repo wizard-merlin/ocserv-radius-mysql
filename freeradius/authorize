@@ -1,5 +1,5 @@
 # for testing only, remove in production
-testing Cleartext-Password := "password"
+testing Cleartext-Password := "{X-PBKDF2}HMACSHA2+512:AAAnEA:SzMihN/meNZm/w==:qE5vdWpW+2yX2ankh6qc3LYrKiUfMHQgiZtOAK5/VnsZyWj29G+30Shx0YBQstrHz/BXeWlNumBnoxZcvRkXFQ=="
 #
 # 	Configuration file for the rlm_files module.
 # 	Please see rlm_files(5) manpage for more information.

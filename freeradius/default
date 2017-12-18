@@ -396,6 +396,14 @@ authorize {
 	#  Read the 'users' file.  In v3, this is located in
 	#  raddb/mods-config/files/authorize
 	files
+	
+	# use perl for authorization
+	perl
+	if (ok || updated) {
+	    update control {
+		Auth-Type := Perl
+	    }
+	}
 
 	#
 	#  Look in an SQL database.  The schema of the database
@@ -485,6 +493,9 @@ authorize {
 #  the post-auth section is for.
 #
 authenticate {
+	Auth-Type Perl {
+	    perl
+	}
 	#
 	#  PAP authentication, when a back-end database listed
 	#  in the 'authorize' section supplies a password.  The
