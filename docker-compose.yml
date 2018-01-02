@@ -9,6 +9,9 @@ services:
         networks:
             app_net:
                 ipv4_address: 172.16.238.10
+        environment:
+            - REST_API_AUTHORIZE=http://portal-backend:8080/radius/authorize
+            - REST_API_AUTHENTICATE=http://portal-backend:8080/radius/authenticate
         deploy:
             restart_policy:
                 condition: any
@@ -16,6 +19,7 @@ services:
                 max_attempts: 3
         depends_on:
            - mysql
+           - portal-backend
         command: ["/root/wait-for-mysql.sh", "mysql", "--", "freeradius", "-X"]
     ocserv:
         build: ./ocserv
@@ -49,7 +53,15 @@ services:
         image: adminer
 #        restart: always
         ports:
+            - 8088:8080
+        networks:
+            - app_net
+    portal-backend:
+        build: ./portal-backend
+        ports:
             - 8080:8080
+        depends_on:
+           - mysql
         networks:
             - app_net
 networks:
