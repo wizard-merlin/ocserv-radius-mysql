@@ -349,3 +349,70 @@ The `authenticate` section lists the modules for authentication. Becasue `Auth-T
 And the `authenticate` function in `auth.pl` will be called. The `authenticate` function will get the encrypted password from `$RAD_CHECK{'Cleartext-Password'}` and get plaintext password from `$RAD_REQUEST{'User-Password'}` and verify whether them match. 
 
 It would be more intuitive if we can use Attribute-Value Pair like `PBKDF2-Password: hashed_password`. Unfortunately, the sql module only recognize attributes like `Crypt-Password`, `MD5-Password`, etc., so we must reuse one of the existing attributes for the `attribute` field of `radcheck` table. "Cleartext-Password" is chosen because otherwise freeradius will preprocess the value. This custom authentication perl script only supports PBKDF2.
+
+
+-----
+No longer use perl module for authorization and authentication now. Use rest module instead.
+```
+--- rest.original	2017-12-31 20:14:45.193887296 -0700
++++ rest	2018-01-01 18:51:42.004563917 -0700
+@@ -36,7 +36,7 @@
+ 	#
+ 	# If you wish to disable this pre-caching and reachability check,
+ 	# comment out the configuration item below.
+-	connect_uri = "http://127.0.0.1/"
++#	connect_uri = "$ENV{CONNECT_URI}"
+ 
+ 	#
+ 	#  How long before new connection attempts timeout, defaults to 4.0 seconds.
+@@ -138,13 +138,18 @@
+ 	#  5xx    server error  no            fail
+ 	#  xxx    -             no            invalid
+ 	authorize {
+-		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?action=authorize"
+-		method = 'get'
++		uri = "$ENV{REST_API_AUTHORIZE}"
++		method = 'post'
++                body = 'json'
++                data = '{   "User-Name":"%{User-Name}",  "NAS-IP-Address":"%{NAS-IP-Address}",   "Calling-Station-Id":"%{Calling-Station-Id}",   "Connect-Info":"%{Connect-Info}",   "Service-Type":"%{Service-Type}",   "NAS-Port-Type":"%{NAS-Port-Type}",   "NAS-Port":"%{NAS-Port}",   "NAS-Identifier":"%{NAS-Identifier}"}'
+ 		tls = ${..tls}
++                
+ 	}
+ 	authenticate {
+-		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?action=authenticate"
+-		method = 'get'
++		uri = "$ENV{REST_API_AUTHENTICATE}"
++		method = 'post'
++                body = 'json'
++                data = '{"User-Name":"%{User-Name}",   "User-Password":"%{User-Password}"}'
+ 		tls = ${..tls}
+ 	}
+ 
+@@ -155,16 +160,16 @@
+ 	#  2xx    successful    yes           ok/updated
+ 	#  5xx    server error  no            fail
+ 	#  xxx    -             no            invalid
+-	accounting {
+-		uri = "${..connect_uri}/user/%{User-Name}/sessions/%{Acct-Unique-Session-ID}"
+-		method = 'post'
+-		tls = ${..tls}
+-	}
+-	post-auth {
+-		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?action=post-auth"
+-		method = 'post'
+-		tls = ${..tls}
+-	}
++#	accounting {
++#		uri = "${..connect_uri}/user/%{User-Name}/sessions/%{Acct-Unique-Session-ID}"
++#		method = 'post'
++#		tls = ${..tls}
++#	}
++#	post-auth {
++#		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?action=post-auth"
++#		method = 'post'
++#		tls = ${..tls}
++#	}
+ 
+ 	#
+ 	#  The connection pool is new for 3.0, and will be used in many
+```

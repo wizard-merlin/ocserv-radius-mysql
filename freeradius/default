@@ -398,10 +398,18 @@ authorize {
 	files
 	
 	# use perl for authorization
-	perl
+#	perl
+#	if (ok || updated) {
+#	    update control {
+#		Auth-Type := Perl
+#	    }
+#	}
+
+	# use rest for authorization
+	rest
 	if (ok || updated) {
 	    update control {
-		Auth-Type := Perl
+		Auth-Type := Rest
 	    }
 	}
 
@@ -493,8 +501,17 @@ authorize {
 #  the post-auth section is for.
 #
 authenticate {
-	Auth-Type Perl {
-	    perl
+#	Auth-Type Perl {
+#	    perl
+#	}
+
+	Auth-Type Rest {
+	    rest {
+                updated = 1
+            }
+            if (updated) {
+                ok
+            }
 	}
 	#
 	#  PAP authentication, when a back-end database listed
